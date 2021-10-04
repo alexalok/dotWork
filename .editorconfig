@@ -1,0 +1,75 @@
+[*]
+
+### Naming ###
+
+## Styles ##
+dotnet_naming_style.lower_camel_case_style.capitalization = camel_case
+dotnet_naming_style.lower_camel_case_style.required_prefix = _
+dotnet_naming_style.upper_camel_case_style.capitalization = pascal_case
+
+## Rules/Symbols ##
+
+# Constants #
+dotnet_naming_rule.constants_rule.severity = warning
+dotnet_naming_rule.constants_rule.style = upper_camel_case_style
+dotnet_naming_rule.constants_rule.symbols = constants_symbols
+dotnet_naming_symbols.constants_symbols.applicable_kinds = field
+dotnet_naming_symbols.constants_symbols.required_modifiers = const
+
+# Private Fields #
+dotnet_naming_rule.private_fields_rule.severity = warning
+dotnet_naming_rule.private_fields_rule.style = lower_camel_case_style
+dotnet_naming_rule.private_fields_rule.symbols = private_fields_symbols
+dotnet_naming_symbols.private_fields_symbols.applicable_accessibilities = private
+dotnet_naming_symbols.private_fields_symbols.applicable_kinds = field
+
+# Public Fields #
+dotnet_naming_rule.public_fields_rule.severity = warning
+dotnet_naming_rule.public_fields_rule.style = upper_camel_case_style
+dotnet_naming_rule.public_fields_rule.symbols = public_fields_symbols
+dotnet_naming_symbols.public_fields_symbols.applicable_accessibilities = public,internal,protected,protected_internal,private_protected
+dotnet_naming_symbols.public_fields_symbols.applicable_kinds = field
+
+# Static Readonly Fields #
+dotnet_naming_rule.static_readonly_rule.severity = warning
+dotnet_naming_rule.static_readonly_rule.style = upper_camel_case_style
+dotnet_naming_rule.static_readonly_rule.symbols = static_readonly_symbols
+dotnet_naming_symbols.static_readonly_symbols.applicable_kinds = field
+dotnet_naming_symbols.static_readonly_symbols.required_modifiers = static,readonly
+
+### Code Style ###
+csharp_new_line_before_members_in_object_initializers = false
+csharp_preferred_modifier_order = public, private, protected, internal, new, abstract, virtual, sealed, override, static, readonly, extern, unsafe, volatile, async:error
+csharp_style_var_for_built_in_types = false:none
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:hint
+dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:hint
+dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:hint
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_require_accessibility_modifiers = never:error
+
+### Analyzers ###
+dotnet_diagnostic.CS0169.severity = error # The private field 'class member' is never used
+dotnet_diagnostic.CS8618.severity = error # Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable
+dotnet_diagnostic.IDE1006.severity = error # Naming Styles
+
+### Roslynator ###
+dotnet_diagnostic.RCS1018.severity = none # Add accessibility modifiers (or vice versa)
+dotnet_diagnostic.RCS1021.severity = none # Convert lambda expression body to expression-body
+dotnet_diagnostic.RCS1090.severity = none # Add call to 'ConfigureAwait' (or vice versa)
+dotnet_diagnostic.RCS1102.severity = none # Make class static
+dotnet_diagnostic.RCS1124.severity = none # Inline local variable
+dotnet_diagnostic.RCS1139.severity = none # Add summary element to documentation comment
+dotnet_diagnostic.RCS1163.severity = none # Unused parameter
+dotnet_diagnostic.RCS1194.severity = none # Implement exception constructors
+dotnet_diagnostic.RCS1213.severity = none # Remove unused member declaration
+
+
+[*.cs]
+indent_style = space
+indent_size = 4
+tab_width = 4
