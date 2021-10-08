@@ -36,12 +36,6 @@ namespace dotWork
         {
             _logger.LogInformation("Starting work.");
 
-            // By resolving scoped services before any awaits we ensure that missing dependencies 
-            // will blow up the host instead of being silently swallowed by BackgroundService's _executingTask.
-            // TODO: we might use this scope once instead of just throwing it out.
-            _ = GetScopedArguments(CancellationToken.None, out var scope);
-            scope.Dispose();
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 await ExecuteIterationSafe(stoppingToken);
@@ -53,10 +47,13 @@ namespace dotWork
 
         async Task ExecuteIterationSafe(CancellationToken stoppingToken)
         {
+            // By resolving scoped services outside try/catch we ensure that missing dependencies 
+            // will blow up the host regardless of _workOptions.StopOnException setting.
+            var arguments = GetScopedArguments(stoppingToken, out var scope);
             try
             {
                 _logger.LogTrace("Executing iteration...");
-                await ExecuteIterationInternal(stoppingToken);
+                await ExecuteIterationInternal(arguments);
                 _logger.LogTrace("Iteration executed.");
             }
             catch (Exception ex)
@@ -68,22 +65,18 @@ namespace dotWork
                     throw;
                 }
             }
-        }
-
-        async Task ExecuteIterationInternal(CancellationToken stoppingToken)
-        {
-            var arguments = GetScopedArguments(stoppingToken, out var scope);
-            try
-            {
-                await (_metadata.IsAsync
-                    ? ExecuteAsynchronousIteration(arguments)
-                    : ExecuteSyncronousIterationAsynchronously(arguments));
-            }
             finally
             {
                 scope.Dispose();
             }
         }
+
+        async Task ExecuteIterationInternal(object?[] arguments)
+            {
+                await (_metadata.IsAsync
+                    ? ExecuteAsynchronousIteration(arguments)
+                    : ExecuteSyncronousIterationAsynchronously(arguments));
+            }
 
         Task ExecuteAsynchronousIteration(object?[] arguments)
         {
