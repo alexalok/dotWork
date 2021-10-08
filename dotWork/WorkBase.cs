@@ -72,11 +72,11 @@ namespace dotWork
         }
 
         async Task ExecuteIterationInternal(object?[] arguments)
-            {
-                await (_metadata.IsAsync
+        {
+            await (_metadata.IsAsync
                     ? ExecuteAsynchronousIteration(arguments)
                     : ExecuteSyncronousIterationAsynchronously(arguments));
-            }
+        }
 
         Task ExecuteAsynchronousIteration(object?[] arguments)
         {
@@ -91,8 +91,12 @@ namespace dotWork
 
             try
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
+                    // Force the continuation to run async, making sure sync works 
+                    // do not block the whole host startup process.
+                    await Task.Yield();
+
                     _metadata.Invoke(_work, arguments);
                 });
             }
