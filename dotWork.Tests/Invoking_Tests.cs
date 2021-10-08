@@ -41,7 +41,7 @@ namespace dotWork.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task Iterations_Do_Not_Stop_If_StopOnException_Is_False(bool stopOnException)
+        public async Task StopOnException_Is_Respected(bool stopOnException)
         {
             // Arrange
             var host = new HostBuilder()
