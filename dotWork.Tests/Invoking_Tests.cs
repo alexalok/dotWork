@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using dotWork.Extensions;
 using dotWork.Tests.Stubs;
+using dotWork.Tests.Works;
 using dotWork.Tests.WorkStubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +12,8 @@ namespace dotWork.Tests
 {
     public class Invoking_Tests
     {
+        static readonly TimeSpan OneMillisecond = TimeSpan.FromMilliseconds(1);
+
         [Theory]
         [InlineData(typeof(Work_Sync_No_Parameters))]
         [InlineData(typeof(Work_Sync_With_CancellationToken))]
@@ -88,6 +91,47 @@ namespace dotWork.Tests
             // Assert
             Assert.True(work1.ExecutedIterationsCount > 0);
             Assert.True(work2.ExecutedIterationsCount > 0);
+        }
+
+        [Fact]
+        public async Task Invoke_Creates_Lifetime_Scope()
+        {
+            // Arrange
+            var host = new HostBuilder()
+                .ConfigureServices(s =>
+                {
+                    s.AddTransient<StubDependency>();
+                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), typeof(DefaultWorkOptions), opt =>
+                    {
+                        opt.DelayBetweenIterations = TimeSpan.Zero;
+                    });
+                })
+                .Build();
+            var work = (Work_Ensure_Iteration_Lifetime)host.Services.GetRequiredService(typeof(Work_Ensure_Iteration_Lifetime));
+
+            // Act 
+            host.Start();
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+            await host.StopAsync();
+
+            // Assert
+            Assert.True(work.ExecutedIterationsCount > 0);
+            // Lifetime assertion is done inside work's ExecuteIteration method.
+        }
+
+        [Fact]
+        public async Task Missing_Iteration_Lifetime_Dependency_Throws()
+        {
+            // Arrange
+            var host = new HostBuilder()
+                .ConfigureServices(s =>
+                {
+                    s.AddWork(typeof(Work_Sync_With_Dependency_And_CancellationToken), typeof(DefaultWorkOptions));
+                })
+                .Build();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => host.Start());
         }
     }
 }

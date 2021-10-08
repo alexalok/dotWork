@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -20,7 +21,7 @@ namespace dotWork
         readonly ILogger<WorkBase<TWork, TWorkOptions>> _logger;
         readonly TWork _work;
         readonly IterationMethodMetadata _metadata;
-        readonly IWorkOptions _workOptions;
+        IWorkOptions _workOptions;
 
         public WorkBase(IServiceProvider services, ILogger<WorkBase<TWork, TWorkOptions>> logger, TWork work)
         {
@@ -33,10 +34,13 @@ namespace dotWork
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!_metadata.IsAsync)
-                await Task.Yield(); // Synchronous services will deadlock the startup process unless we yield manually.
-
             _logger.LogInformation("Starting work.");
+
+            // By resolving scoped services before any awaits we ensure that missing dependencies 
+            // will blow up the host instead of being silently swallowed by BackgroundService's _executingTask.
+            // TODO: we might use this scope once instead of just throwing it out.
+            _ = GetScopedArguments(CancellationToken.None, out var scope);
+            scope.Dispose();
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -66,32 +70,46 @@ namespace dotWork
             }
         }
 
-        Task ExecuteIterationInternal(CancellationToken stoppingToken)
+        async Task ExecuteIterationInternal(CancellationToken stoppingToken)
         {
-            using var scope = _services.CreateScope();
-            var provider = scope.ServiceProvider;
-
-            var arguments = GetArguments(provider, stoppingToken);
-            object? result;
+            var arguments = GetScopedArguments(stoppingToken, out var scope);
             try
             {
-                result = _metadata.Invoke(_work, arguments);
+                await (_metadata.IsAsync
+                    ? ExecuteAsynchronousIteration(arguments)
+                    : ExecuteSyncronousIterationAsynchronously(arguments));
+            }
+            finally
+            {
+                scope.Dispose();
+            }
+        }
+
+        Task ExecuteAsynchronousIteration(object?[] arguments)
+        {
+            Debug.Assert(_metadata.IsAsync);
+            var result = (Task)_metadata.Invoke(_work, arguments)!;
+            return result;
+        }
+
+        async Task ExecuteSyncronousIterationAsynchronously(object?[] arguments)
+        {
+            Debug.Assert(!_metadata.IsAsync);
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    _metadata.Invoke(_work, arguments);
+                });
             }
             catch (TargetInvocationException ex)
             {
-                if (!_metadata.IsAsync)
-                {
-                    // Due to use of reflection exceptions happened inside invoked iteration's method
-                    // get wrapped in TargetInvocationException but only for non-async methods.
-                    // We unwrap the TargetInvocationException here to better match users' expectations.
-                    throw ex.InnerException!;
-                }
-
-                throw;
+                // Due to use of reflection exceptions happened inside invoked iteration's method
+                // get wrapped in TargetInvocationException but only for non-async methods.
+                // We unwrap the TargetInvocationException here to better match users' expectations.
+                throw ex.InnerException!;
             }
-
-            // We cannot rely on _metadata.IsAsync here because there may be non-async Task-returning (proxy) methods.
-            return result is Task task ? task : Task.CompletedTask;
         }
 
         IterationMethodMetadata CreateMetadata()
@@ -114,8 +132,13 @@ namespace dotWork
             return metadata;
         }
 
-        object?[] GetArguments(IServiceProvider provider, CancellationToken stoppingToken)
+        object?[] GetScopedArguments(CancellationToken stoppingToken, out IDisposable scope)
         {
+            // TODO do not create scope if we have no deps except CancellationToken.
+
+            scope = _services.CreateScope();
+            var provider = ((IServiceScope)scope).ServiceProvider;
+
             var parameters = _metadata.Parameters;
             var arguments = new object?[parameters.Length];
 
@@ -143,8 +166,18 @@ namespace dotWork
 
         IWorkOptions GetWorkOptions()
         {
-            var snapshot = _services.GetRequiredService<IOptionsSnapshot<TWorkOptions>>();
-            return snapshot.Get(typeof(TWork).Name);
+            var monitor = _services.GetRequiredService<IOptionsMonitor<TWorkOptions>>();
+            var options = monitor.Get(typeof(TWork).Name);
+            monitor.OnChange(OnWorkOptionsChanged);
+            return options;
+        }
+
+        void OnWorkOptionsChanged(TWorkOptions options, string name)
+        {
+            if (name != typeof(TWork).Name)
+                return;
+            _workOptions = options;
+            _logger.LogInformation("Work options reloaded.");
         }
 
         static bool IsMethodAsync(MethodInfo method)

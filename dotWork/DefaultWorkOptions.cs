@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace dotWork
 {
@@ -8,7 +9,7 @@ namespace dotWork
     /// </summary>
     public class DefaultWorkOptions : IWorkOptions
     {
-        public TimeSpan DelayBetweenIterations { get; set; } = TimeSpan.FromMilliseconds(-1);
+        public TimeSpan DelayBetweenIterations { get; set; } = Timeout.InfiniteTimeSpan;
 
         public bool StopOnException { get; set; } = false;
     }

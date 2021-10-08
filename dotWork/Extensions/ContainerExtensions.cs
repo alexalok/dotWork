@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace dotWork.Extensions
@@ -13,6 +14,9 @@ namespace dotWork.Extensions
             var optionsBuilder = services.AddOptions<TWorkOptions>(typeof(TWork).Name);
             if (configure != null)
                 optionsBuilder.Configure(configure);
+
+            optionsBuilder.Validate(opt => opt.DelayBetweenIterations >= Timeout.InfiniteTimeSpan,
+                "Delay between iterations must be either Infinite, Zero, or a positive TimeSpan value.");
 
             services.AddSingleton<TWork>();
             services.AddHostedService<WorkBase<TWork, TWorkOptions>>();
