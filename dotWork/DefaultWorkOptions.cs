@@ -9,6 +9,8 @@ namespace dotWork
     /// </summary>
     public class DefaultWorkOptions : IWorkOptions
     {
+        public bool IsEnabled { get; set; } = true;
+
         public TimeSpan DelayBetweenIterations { get; set; } = Timeout.InfiniteTimeSpan;
 
         public bool StopOnException { get; set; } = false;

@@ -1,11 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using dotWork.Extensions;
 using dotWork.Tests.Stubs;
 using dotWork.Tests.Works;
 using dotWork.Tests.WorkStubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace dotWork.Tests
@@ -132,6 +132,33 @@ namespace dotWork.Tests
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => host.Start());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task IsEnabled_Respected(bool isEnabled)
+        {
+            // Arrange
+            var host = new HostBuilder()
+                .ConfigureServices(s =>
+                {
+                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), opt =>
+                    {
+                        opt.IsEnabled = isEnabled;
+                    });
+                })
+                .Build();
+            var work = (Work_Async_With_Execution_Counter_Throws_Exception)host.Services.GetRequiredService(typeof(Work_Async_With_Execution_Counter_Throws_Exception));
+
+            // Act 
+            host.Start();
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+            await host.StopAsync();
+
+            // Assert
+            int expectedIterationsCount = isEnabled ? 1 : 0;
+            Assert.Equal(expectedIterationsCount, work.ExecutedIterationsCount);
         }
     }
 }

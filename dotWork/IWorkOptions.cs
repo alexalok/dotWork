@@ -4,6 +4,8 @@ namespace dotWork
 {
     public interface IWorkOptions
     {
+        public bool IsEnabled { get; set; }
+
         public TimeSpan DelayBetweenIterations { get; set; }
 
         /// <summary>

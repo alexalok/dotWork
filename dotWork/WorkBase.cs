@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace dotWork
 {
@@ -34,6 +34,12 @@ namespace dotWork
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            if (!_workOptions.IsEnabled)
+            {
+                _logger.LogWarning("Work is disabled.");
+                return;
+            }
+
             _logger.LogInformation("Starting work.");
 
             while (!stoppingToken.IsCancellationRequested)
