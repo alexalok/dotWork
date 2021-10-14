@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -42,7 +43,18 @@ namespace dotWork.Extensions
             optionsBuilder.Validate(opt => opt.DelayBetweenIterations >= Timeout.InfiniteTimeSpan,
                 "Delay between iterations must be either Infinite, Zero, or a positive TimeSpan value.");
 
-            services.AddSingleton<TWork>();
+            services.TryAddSingleton<TWork>();
+
+            ServiceDescriptor? existingWorkBase = services.SingleOrDefault(d =>
+                   d.ImplementationType != null
+                && d.ImplementationType.IsGenericType
+                && d.ImplementationType.GetGenericTypeDefinition() == typeof(WorkBase<,>)
+                && d.ImplementationType.GenericTypeArguments.Contains(typeof(TWork)));
+            if (existingWorkBase != null)
+            {
+                // This work is already registered, remove old registration first.
+                services.Remove(existingWorkBase);
+            }
             services.AddHostedService<WorkBase<TWork, TWorkOptions>>();
 
             return services;
