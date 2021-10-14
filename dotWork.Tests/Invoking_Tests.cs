@@ -160,5 +160,35 @@ namespace dotWork.Tests
             int expectedIterationsCount = isEnabled ? 1 : 0;
             Assert.Equal(expectedIterationsCount, work.ExecutedIterationsCount);
         }
+
+        [Fact]
+        public async Task Sync_Invocation_Exception_Is_Unwrapped()
+        {
+            // Arrange
+            var host = new HostBuilder()
+                .ConfigureServices(s =>
+                {
+                    s.AddWork(typeof(Work_Sync_Throws), typeof(DefaultWorkOptions));
+                })
+                .Build();
+
+            var workBase = (WorkBase<Work_Sync_Throws, DefaultWorkOptions>)
+                host.Services.GetServices<IHostedService>()
+                .Single(s => s.GetType() == typeof(WorkBase<Work_Sync_Throws, DefaultWorkOptions>));
+
+            Exception? thrownEx = null;
+            workBase.OnIterationException += (_, ex) =>
+            {
+                thrownEx = ex;
+            };
+
+            // Act 
+            host.Start();
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+            await host.StopAsync();
+
+            // Assert
+            Assert.IsType<IterationFinishedException>(thrownEx);
+        }
     }
 }

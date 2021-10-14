@@ -64,6 +64,7 @@ namespace dotWork
             }
             catch (Exception ex)
             {
+                OnIterationException?.Invoke(this, ex);
                 _logger.LogError(ex, "Exception during iteration.");
                 if (_workOptions.StopOnException)
                 {
@@ -91,28 +92,26 @@ namespace dotWork
             return result;
         }
 
-        async Task ExecuteSyncronousIterationAsynchronously(object?[] arguments)
+        Task ExecuteSyncronousIterationAsynchronously(object?[] arguments)
         {
             Debug.Assert(!_metadata.IsAsync);
-
-            try
+            return Task.Run(async () =>
             {
-                await Task.Run(async () =>
+                // Force the continuation to run async, making sure sync works 
+                // do not block the whole host startup process.
+                await Task.Yield();
+                try
                 {
-                    // Force the continuation to run async, making sure sync works 
-                    // do not block the whole host startup process.
-                    await Task.Yield();
-
                     _metadata.Invoke(_work, arguments);
-                });
-            }
-            catch (TargetInvocationException ex)
-            {
-                // Due to use of reflection exceptions happened inside invoked iteration's method
-                // get wrapped in TargetInvocationException but only for non-async methods.
-                // We unwrap the TargetInvocationException here to better match users' expectations.
-                throw ex.InnerException!;
-            }
+                }
+                catch (TargetInvocationException ex)
+                {
+                    // Due to use of reflection exceptions happened inside invoked iteration's method
+                    // get wrapped in TargetInvocationException but only for non-async invoked methods.
+                    // We unwrap the TargetInvocationException here to better match users' expectations.
+                    throw ex.InnerException!;
+                }
+            });
         }
 
         IterationMethodMetadata CreateMetadata()
@@ -194,5 +193,7 @@ namespace dotWork
 
             return attrib != null;
         }
+
+        internal event EventHandler<Exception>? OnIterationException;
     }
 }
