@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>0.0.3-beta</Version>
+		<Version>0.0.4-beta</Version>
 		<PackageReleaseNotes>
-			* Public beta release
+			* Add a helper method to register all works at once
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
