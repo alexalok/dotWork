@@ -1,9 +1,10 @@
 ﻿namespace dotWork.Tests.WorkStubs
 {
-    class Work_Sync_No_Parameters
+    public class Work_Implementing_IWork : IWork
     {
         public void ExecuteIteration()
         {
+
         }
     }
 }

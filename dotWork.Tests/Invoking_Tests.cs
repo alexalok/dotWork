@@ -1,10 +1,11 @@
 using dotWork.Extensions;
 using dotWork.Tests.Stubs;
-using dotWork.Tests.Works;
+using dotWork.Tests.TestExceptions;
 using dotWork.Tests.WorkStubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -48,7 +49,7 @@ namespace dotWork.Tests
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<StubDependency>();
-                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), opt =>
+                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), configure: opt =>
                     {
                         opt.DelayBetweenIterations = TimeSpan.Zero;
                         opt.StopOnException = stopOnException;
@@ -101,7 +102,7 @@ namespace dotWork.Tests
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<StubDependency>();
-                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), typeof(DefaultWorkOptions), opt =>
+                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), typeof(DefaultWorkOptions), configure: opt =>
                     {
                         opt.DelayBetweenIterations = TimeSpan.Zero;
                     });
@@ -143,7 +144,7 @@ namespace dotWork.Tests
             var host = new HostBuilder()
                 .ConfigureServices(s =>
                 {
-                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), opt =>
+                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), configure: opt =>
                     {
                         opt.IsEnabled = isEnabled;
                     });

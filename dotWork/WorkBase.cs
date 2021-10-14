@@ -21,20 +21,20 @@ namespace dotWork
         readonly ILogger<WorkBase<TWork, TWorkOptions>> _logger;
         readonly TWork _work;
         readonly IterationMethodMetadata _metadata;
-        IWorkOptions _workOptions;
+        internal IWorkOptions WorkOptions;
 
         public WorkBase(IServiceProvider services, ILogger<WorkBase<TWork, TWorkOptions>> logger, TWork work)
         {
             _services = services;
             _logger = logger;
             _work = work;
-            _workOptions = GetWorkOptions();
+            WorkOptions = GetWorkOptions();
             _metadata = CreateMetadata();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!_workOptions.IsEnabled)
+            if (!WorkOptions.IsEnabled)
             {
                 _logger.LogWarning("Work is disabled.");
                 return;
@@ -45,7 +45,7 @@ namespace dotWork
             while (!stoppingToken.IsCancellationRequested)
             {
                 await ExecuteIterationSafe(stoppingToken);
-                await Task.Delay(_workOptions.DelayBetweenIterations, stoppingToken);
+                await Task.Delay(WorkOptions.DelayBetweenIterations, stoppingToken);
             }
 
             _logger.LogInformation("Work is stopped.");
@@ -66,7 +66,7 @@ namespace dotWork
             {
                 OnIterationException?.Invoke(this, ex);
                 _logger.LogError(ex, "Exception during iteration.");
-                if (_workOptions.StopOnException)
+                if (WorkOptions.StopOnException)
                 {
                     _logger.LogError("No more iterations of this work will be executed due to an unhandled exception.");
                     throw;
@@ -118,7 +118,7 @@ namespace dotWork
         {
             var methodInfo = _work.GetType().GetMethod(ExecuteIterationMethodName);
             if (methodInfo == null)
-                throw new InvalidOperationException($"{nameof(TWork)} does not contain a public {ExecuteIterationMethodName} method.");
+                throw new InvalidOperationException($"{typeof(TWork).Name} does not contain a public {ExecuteIterationMethodName} method.");
 
             var parameters = methodInfo.GetParameters();
 
@@ -178,7 +178,7 @@ namespace dotWork
         {
             if (name != typeof(TWork).Name)
                 return;
-            _workOptions = options;
+            WorkOptions = options;
             _logger.LogInformation("Work options reloaded.");
         }
 
