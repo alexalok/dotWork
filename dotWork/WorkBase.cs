@@ -26,7 +26,7 @@ namespace dotWork
         public WorkBase(IServiceProvider services, ILoggerFactory loggerFac, TWork work)
         {
             _services = services;
-            _logger = loggerFac.CreateLogger(typeof(WorkBase<,>).FullName + "." + typeof(TWork).Name);
+            _logger = loggerFac.CreateLogger(typeof(WorkBase<,>).FullName![..^2] + "." + typeof(TWork).Name);
             _work = work;
             WorkOptions = GetWorkOptions();
             _metadata = CreateMetadata();
