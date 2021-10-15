@@ -18,15 +18,15 @@ namespace dotWork
         const string ExecuteIterationMethodName = "ExecuteIteration";
 
         readonly IServiceProvider _services;
-        readonly ILogger<WorkBase<TWork, TWorkOptions>> _logger;
+        readonly ILogger _logger;
         readonly TWork _work;
         readonly IterationMethodMetadata _metadata;
         internal IWorkOptions WorkOptions;
 
-        public WorkBase(IServiceProvider services, ILogger<WorkBase<TWork, TWorkOptions>> logger, TWork work)
+        public WorkBase(IServiceProvider services, ILoggerFactory loggerFac, TWork work)
         {
             _services = services;
-            _logger = logger;
+            _logger = loggerFac.CreateLogger(typeof(WorkBase<,>).FullName + "." + typeof(TWork).Name);
             _work = work;
             WorkOptions = GetWorkOptions();
             _metadata = CreateMetadata();
