@@ -8,7 +8,7 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>0.0.8-beta</Version>
+		<Version>0.0.9-beta</Version>
 		<PackageReleaseNotes>
 			* Changed logging category
 		</PackageReleaseNotes>
