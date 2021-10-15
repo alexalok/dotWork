@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>0.0.7-beta</Version>
+		<Version>0.0.8-beta</Version>
 		<PackageReleaseNotes>
-			* Allow re-registering works
+			* Changed logging category
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
