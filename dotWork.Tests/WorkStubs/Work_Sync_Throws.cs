@@ -2,7 +2,7 @@
 
 namespace dotWork.Tests.WorkStubs
 {
-    class Work_Sync_Throws
+    class Work_Sync_Throws : WorkBase<DefaultWorkOptions>
     {
         public void ExecuteIteration()
         {

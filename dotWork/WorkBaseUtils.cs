@@ -1,5 +1,5 @@
-﻿using System;
-using dotWork.Extensions;
+﻿using dotWork.Extensions;
+using System;
 
 namespace dotWork
 {
@@ -10,7 +10,7 @@ namespace dotWork
             if (!workOptionsType.ImplementsInterface(typeof(IWorkOptions)))
                 throw new ArgumentException($"{nameof(workOptionsType.Name)} does not implement IWorkOptions interface.", nameof(workOptionsType));
 
-            var workBaseType = typeof(WorkBase<,>).MakeGenericType(workType, workOptionsType);
+            var workBaseType = typeof(WorkHost<,>).MakeGenericType(workType, workOptionsType);
             return workBaseType;
         }
 

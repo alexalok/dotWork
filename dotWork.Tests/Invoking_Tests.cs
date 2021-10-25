@@ -30,7 +30,7 @@ namespace dotWork.Tests
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<StubDependency>();
-                    s.AddWork(workType, typeof(DefaultWorkOptions));
+                    s.AddWork(workType);
                 })
                 .Build();
 
@@ -49,7 +49,7 @@ namespace dotWork.Tests
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<StubDependency>();
-                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), configure: opt =>
+                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), configure: opt =>
                     {
                         opt.DelayBetweenIterations = TimeSpan.Zero;
                         opt.StopOnException = stopOnException;
@@ -77,8 +77,8 @@ namespace dotWork.Tests
             var host = new HostBuilder()
                 .ConfigureServices(s =>
                 {
-                    s.AddWork(typeof(Work_Sync_With_Counter1), typeof(DefaultWorkOptions));
-                    s.AddWork(typeof(Work_Sync_With_Counter2), typeof(DefaultWorkOptions));
+                    s.AddWork(typeof(Work_Sync_With_Counter1));
+                    s.AddWork(typeof(Work_Sync_With_Counter2));
                 })
                 .Build();
             var work1 = (Work_Sync_With_Counter1)host.Services.GetRequiredService(typeof(Work_Sync_With_Counter1));
@@ -102,7 +102,7 @@ namespace dotWork.Tests
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<StubDependency>();
-                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), typeof(DefaultWorkOptions), configure: opt =>
+                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), configure: opt =>
                     {
                         opt.DelayBetweenIterations = TimeSpan.Zero;
                     });
@@ -127,7 +127,7 @@ namespace dotWork.Tests
             var host = new HostBuilder()
                 .ConfigureServices(s =>
                 {
-                    s.AddWork(typeof(Work_Sync_With_Dependency_And_CancellationToken), typeof(DefaultWorkOptions));
+                    s.AddWork(typeof(Work_Sync_With_Dependency_And_CancellationToken));
                 })
                 .Build();
 
@@ -144,7 +144,7 @@ namespace dotWork.Tests
             var host = new HostBuilder()
                 .ConfigureServices(s =>
                 {
-                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), typeof(DefaultWorkOptions), configure: opt =>
+                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), configure: opt =>
                     {
                         opt.IsEnabled = isEnabled;
                     });
@@ -169,13 +169,13 @@ namespace dotWork.Tests
             var host = new HostBuilder()
                 .ConfigureServices(s =>
                 {
-                    s.AddWork(typeof(Work_Sync_Throws), typeof(DefaultWorkOptions));
+                    s.AddWork(typeof(Work_Sync_Throws));
                 })
                 .Build();
 
-            var workBase = (WorkBase<Work_Sync_Throws, DefaultWorkOptions>)
+            var workBase = (WorkHost<Work_Sync_Throws, DefaultWorkOptions>)
                 host.Services.GetServices<IHostedService>()
-                .Single(s => s.GetType() == typeof(WorkBase<Work_Sync_Throws, DefaultWorkOptions>));
+                .Single(s => s.GetType() == typeof(WorkHost<Work_Sync_Throws, DefaultWorkOptions>));
 
             Exception? thrownEx = null;
             workBase.OnIterationException += (_, ex) =>

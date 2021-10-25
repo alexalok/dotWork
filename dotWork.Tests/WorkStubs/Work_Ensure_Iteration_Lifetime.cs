@@ -3,7 +3,7 @@ using Xunit;
 
 namespace dotWork.Tests.WorkStubs
 {
-    class Work_Ensure_Iteration_Lifetime
+    class Work_Ensure_Iteration_Lifetime : WorkBase<DefaultWorkOptions>
     {
         StubDependency? _prevDependency;
         public int ExecutedIterationsCount;

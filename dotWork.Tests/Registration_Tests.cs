@@ -22,8 +22,8 @@ namespace dotWork.Tests
                 {
                     var worksOptions = new Dictionary<string, string>()
                     {
-                        {"Works:Work_Implementing_IWork:IsEnabled", "false" },
-                        {"Works:Work_Implementing_IWork:DelayBetweenIterationsInSeconds", "1000" }
+                        {"Works:Work_Async_No_Parameters:IsEnabled", "false" },
+                        {"Works:Work_Async_No_Parameters:DelayBetweenIterationsInSeconds", "1000" }
                     };
                     cfg.AddInMemoryCollection(worksOptions);
                 })
@@ -34,9 +34,9 @@ namespace dotWork.Tests
                 })
                 .Build();
 
-            var workBase = (WorkBase<Work_Implementing_IWork, DefaultWorkOptions>)
+            var workBase = (WorkHost<Work_Async_No_Parameters, DefaultWorkOptions>)
                 host.Services.GetServices<IHostedService>()
-                    .Single(s => s.GetType() == typeof(WorkBase<Work_Implementing_IWork, DefaultWorkOptions>));
+                    .Single(s => s.GetType() == typeof(WorkHost<Work_Async_No_Parameters, DefaultWorkOptions>));
 
             // Act 
 
@@ -45,29 +45,40 @@ namespace dotWork.Tests
             Assert.Equal(TimeSpan.FromSeconds(1000), workBase.WorkOptions.DelayBetweenIterations);
         }
 
+        /// <summary>
+        /// Ensure we can register a work and then override its registration.
+        /// </summary>
         [Fact]
-        public void Reregistration_Works()
+        public void Reregistration_Override_Works()
         {
-            // Removes old host
-            // Changes work options type
-
             // Arrange
             var host = new HostBuilder()
+                .ConfigureAppConfiguration(cfg =>
+                {
+                    var worksOptions = new Dictionary<string, string>()
+                    {
+                        {"Works:Work_With_DefaultWorkOptions2:DelayBetweenIterationsInSeconds", "1000" }
+                    };
+                    cfg.AddInMemoryCollection(worksOptions);
+                })
                 .ConfigureServices((ctx, s) =>
                 {
                     var cfg = ctx.Configuration;
-                    s.AddWorks(cfg.GetSection("Works"));
-                    s.AddWork<Work_Implementing_IWork, DefaultWorkOptions2>();
+                    s.AddWorks(cfg.GetSection("Works"), t => t == typeof(Work_With_DefaultWorkOptions2));
+                    s.AddWork<Work_With_DefaultWorkOptions2, DefaultWorkOptions2>(configure: opt =>
+                    {
+                        opt.IsEnabled = false;
+                    });
                 })
                 .Build();
             var hostedServices = host.Services.GetServices<IHostedService>();
-            var workBase = hostedServices.Single();
+            var workHost = (WorkHost<Work_With_DefaultWorkOptions2, DefaultWorkOptions2>)hostedServices.Single();
 
             // Act 
 
             // Assert
-            Assert.Single(hostedServices); // Ensure we remove a previous WorkBase registration so that we don't end up with two hosted services.
-            Assert.IsType<WorkBase<Work_Implementing_IWork, DefaultWorkOptions2>>(workBase); // Ensure the options type is actually changed.
+            Assert.False(workHost.WorkOptions.IsEnabled); // Ensure our override applied.
+            Assert.Equal(1000, workHost.WorkOptions.DelayBetweenIterationsInSeconds); // Ensure our override preserved unchanged values from configuration.
         }
     }
 }

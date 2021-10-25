@@ -2,7 +2,7 @@
 
 namespace dotWork.Tests.WorkStubs
 {
-    class Work_Async_No_Parameters
+    class Work_Async_No_Parameters : WorkBase<DefaultWorkOptions>
     {
         public async Task ExecuteIteration()
         {
