@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>0.0.10-beta</Version>
+		<Version>0.0.11-beta</Version>
 		<PackageReleaseNotes>
-			* Removed an ability to register convention-based works
+			* Changed IWorkOptions delay option to specify seconds instead of TimeSpan
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
