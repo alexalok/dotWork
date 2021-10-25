@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 
 namespace dotWork
 {
@@ -12,13 +11,7 @@ namespace dotWork
     {
         public bool IsEnabled { get; set; } = true;
 
-        public TimeSpan DelayBetweenIterations { get; set; } = Timeout.InfiniteTimeSpan;
-
-        public int DelayBetweenIterationsInSeconds
-        {
-            get => (int)DelayBetweenIterations.TotalSeconds;
-            set => DelayBetweenIterations = TimeSpan.FromSeconds(value);
-        }
+        public int DelayBetweenIterationsInSeconds { get; set; } = Timeout.Infinite;
 
         public bool StopOnException { get; set; } = false;
     }

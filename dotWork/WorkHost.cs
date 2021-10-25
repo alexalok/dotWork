@@ -47,7 +47,7 @@ namespace dotWork
             while (!stoppingToken.IsCancellationRequested)
             {
                 await ExecuteIterationSafe(stoppingToken);
-                await Task.Delay(WorkOptions.DelayBetweenIterations, stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(WorkOptions.DelayBetweenIterationsInSeconds), stoppingToken);
             }
 
             _logger.LogInformation("Work is stopped.");

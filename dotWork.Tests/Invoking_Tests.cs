@@ -51,7 +51,7 @@ namespace dotWork.Tests
                     s.AddTransient<StubDependency>();
                     s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), configure: opt =>
                     {
-                        opt.DelayBetweenIterations = TimeSpan.Zero;
+                        opt.DelayBetweenIterationsInSeconds = 0;
                         opt.StopOnException = stopOnException;
                     });
                 })
@@ -104,7 +104,7 @@ namespace dotWork.Tests
                     s.AddTransient<StubDependency>();
                     s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), configure: opt =>
                     {
-                        opt.DelayBetweenIterations = TimeSpan.Zero;
+                        opt.DelayBetweenIterationsInSeconds = 0;
                     });
                 })
                 .Build();

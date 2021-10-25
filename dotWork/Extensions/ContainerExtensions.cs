@@ -49,8 +49,8 @@ namespace dotWork.Extensions
             if (configure != null)
                 optionsBuilder.Configure(configure);
 
-            optionsBuilder.Validate(opt => opt.DelayBetweenIterations >= Timeout.InfiniteTimeSpan,
-                "Delay between iterations must be either Infinite, Zero, or a positive TimeSpan value.");
+            optionsBuilder.Validate(opt => opt.DelayBetweenIterationsInSeconds >= Timeout.Infinite,
+                "Delay between iterations must be either Infinite, Zero, or a positive value.");
 
             services.TryAddSingleton<TWork>();
 
