@@ -40,7 +40,11 @@ dotnet_naming_symbols.static_readonly_symbols.required_modifiers = static,readon
 ### Code Style ###
 csharp_new_line_before_members_in_object_initializers = false
 csharp_preferred_modifier_order = public, private, protected, internal, new, abstract, virtual, sealed, override, static, readonly, extern, unsafe, volatile, async:error
-csharp_style_var_for_built_in_types = false:none
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = true:silent
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:hint
 dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:hint
 dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:hint
@@ -55,19 +59,9 @@ dotnet_style_require_accessibility_modifiers = never:error
 ### Analyzers ###
 dotnet_diagnostic.CS0169.severity = error # The private field 'class member' is never used
 dotnet_diagnostic.CS8618.severity = error # Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable
+dotnet_diagnostic.IDE0052.severity = error # Remove unread private member
+dotnet_diagnostic.IDE0060.severity = warning # Remove unused parameter
 dotnet_diagnostic.IDE1006.severity = error # Naming Styles
-
-### Roslynator ###
-dotnet_diagnostic.RCS1018.severity = none # Add accessibility modifiers (or vice versa)
-dotnet_diagnostic.RCS1021.severity = none # Convert lambda expression body to expression-body
-dotnet_diagnostic.RCS1090.severity = none # Add call to 'ConfigureAwait' (or vice versa)
-dotnet_diagnostic.RCS1102.severity = none # Make class static
-dotnet_diagnostic.RCS1124.severity = none # Inline local variable
-dotnet_diagnostic.RCS1139.severity = none # Add summary element to documentation comment
-dotnet_diagnostic.RCS1163.severity = none # Unused parameter
-dotnet_diagnostic.RCS1194.severity = none # Implement exception constructors
-dotnet_diagnostic.RCS1213.severity = none # Remove unused member declaration
-
 
 [*.cs]
 indent_style = space
