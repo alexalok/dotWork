@@ -5,7 +5,15 @@ VisualStudioVersion = 17.0.31717.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotWork", "dotWork\dotWork.csproj", "{6BC1AC20-B8EF-40CE-AEE5-7397C0903E25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotWork.Tests", "dotWork.Tests\dotWork.Tests.csproj", "{A826B67B-AC6D-45DC-BB96-09592CC34095}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotWork.Tests", "dotWork.Tests\dotWork.Tests.csproj", "{A826B67B-AC6D-45DC-BB96-09592CC34095}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02CBD787-77EA-4AF3-9642-CB56BB537903}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotWork.Example", "dotWork.Example\dotWork.Example.csproj", "{5BA3579B-4174-4409-A20B-DB65106F5286}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +29,10 @@ Global
 		{A826B67B-AC6D-45DC-BB96-09592CC34095}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A826B67B-AC6D-45DC-BB96-09592CC34095}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A826B67B-AC6D-45DC-BB96-09592CC34095}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BA3579B-4174-4409-A20B-DB65106F5286}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BA3579B-4174-4409-A20B-DB65106F5286}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BA3579B-4174-4409-A20B-DB65106F5286}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BA3579B-4174-4409-A20B-DB65106F5286}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
