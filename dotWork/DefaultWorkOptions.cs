@@ -3,9 +3,9 @@
 namespace dotWork
 {
     /// <summary>
-    /// <see cref="IsEnabled"/>: <i>true</i>.<br/>
-    /// <see cref="DelayBetweenIterations"/>: <i>Infinite</i>.<br/>
-    /// <see cref="StopOnException"/>: <i>false</i>.
+    ///     <see cref="IsEnabled" />: <i>true</i>.<br />
+    ///     <see cref="DelayBetweenIterationsInSeconds" />: <i>Infinite</i>.<br />
+    ///     <see cref="StopOnException" />: <i>false</i>.
     /// </summary>
     public class DefaultWorkOptions : IWorkOptions
     {

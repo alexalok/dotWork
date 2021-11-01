@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace dotWork
 {
@@ -47,7 +47,10 @@ namespace dotWork
             while (!stoppingToken.IsCancellationRequested)
             {
                 await ExecuteIterationSafe(stoppingToken);
-                await Task.Delay(TimeSpan.FromSeconds(WorkOptions.DelayBetweenIterationsInSeconds), stoppingToken);
+                var delay = WorkOptions.DelayBetweenIterationsInSeconds == Timeout.Infinite
+                    ? Timeout.InfiniteTimeSpan
+                    : TimeSpan.FromSeconds(WorkOptions.DelayBetweenIterationsInSeconds);
+                await Task.Delay(delay, stoppingToken);
             }
 
             _logger.LogInformation("Work is stopped.");
@@ -199,6 +202,8 @@ namespace dotWork
             return attrib != null;
         }
 
-        internal event EventHandler<Exception>? OnIterationException;
+        // TODO since we only need that for testing, we should try to access the BackgroundService._executingTask
+        // using reflection instead.
+        internal event EventHandler<Exception>? OnIterationException; 
     }
 }
