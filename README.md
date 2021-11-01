@@ -22,21 +22,21 @@ To create a new Worker Service project with Visual Studio, you'd select **File**
 dotnet new worker --name <Project.Name>
 ```
 
+**Please note** that the worker project template automatically creates an example work class. You should delete it and create a new one by following the instructions below.
+
 ## Install a NuGet package
 
 ### Using Visual Studio
 
-Install the `dotWork` package by following [the instructions](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio). Make sure to check the **Include prerelease** checkbox because there is no release version of dotWork yet.
+Install the `dotWork` package by following [the instructions](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio).
 
 ### Using .NET CLI
 
 ```c#
-dotnet add package dotWork --prerelease
+dotnet add package dotWork
 ```
 
-At this point the dotWork package is installed in your project but is not used. dotWork will not have any side-effects on your application unless explicitly used. Note that the `--prerelease` argument is mandatory because there is no release version of dotWork yet.
-
-**Please note** that the worker project template automatically creates an example work class. You should delete it and create a new one by following the instructions below.
+At this point the dotWork package is installed in your project but is not used. dotWork will not have any side-effects on your application unless explicitly used.
 
 # Usage
 
