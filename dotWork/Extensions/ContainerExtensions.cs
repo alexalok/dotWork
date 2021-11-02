@@ -1,41 +1,60 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace dotWork.Extensions
 {
     public static class ContainerExtensions
     {
         /// <summary>
-        /// Registers all or selected classes implementing <see cref="IWork{TWorkOptions}"/> interface as works with the corresponding options.
-        /// and configures them from <see cref="IConfigurationSection"/>.
-        /// <remarks>Only works contained in an assembly that called this method are registered.</remarks>
+        ///     Registers all or selected classes implementing <see cref="IWork{TWorkOptions}" /> interface as works with the
+        ///     corresponding options.
+        ///     and configures them from <see cref="IConfigurationSection" />.
+        ///     <remarks>Only works contained in an assembly that called this method are registered.</remarks>
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="configurationSection"></param>
-        /// <param name="typeSelector">If provided, each type implemeting <see cref="IWork{TWorkOptions}"/> will additionally be tested against the selector and only registered if selector returns <b>true</b>.</param>
-        public static IServiceCollection AddWorks(this IServiceCollection services, IConfigurationSection configurationSection, Func<Type, bool>? typeSelector = null)
+        /// <param name="configuration">Configuration root or section containing a dictionary of per-work configuration sections.</param>
+        /// <param name="typeSelector">
+        ///     If provided, each type implemeting <see cref="IWork{TWorkOptions}" /> will additionally be
+        ///     tested against the selector and only registered if selector returns <b>true</b>.
+        /// </param>
+        public static IServiceCollection AddWorks(this IServiceCollection services, IConfiguration configuration, Func<Type, bool>? typeSelector = null)
         {
-            if (configurationSection is null)
-                throw new ArgumentNullException(nameof(configurationSection));
+            if (configuration is null)
+                throw new ArgumentNullException(nameof(configuration));
 
             var workTypes = Assembly.GetCallingAssembly().GetTypes().Where(t => t.ImplementsInterface(typeof(IWork<>)));
             foreach (var workType in workTypes)
             {
                 if (typeSelector?.Invoke(workType) == false)
                     continue;
-                var configSubSection = configurationSection.GetSection(workType.Name);
+                var configSubSection = configuration.GetSection(workType.Name);
                 AddWork(services, workType, configSubSection);
             }
 
             return services;
         }
 
-        public static IServiceCollection AddWork<TWork, TWorkOptions>(this IServiceCollection services, IConfigurationSection? configurationSection = null, Action<TWorkOptions>? configure = null)
+        /// <summary>
+        ///     Register single work with the container.
+        /// </summary>
+        /// <typeparam name="TWork">Type of work to be registered.</typeparam>
+        /// <typeparam name="TWorkOptions">Type of work options to be registered.</typeparam>
+        /// <param name="services"></param>
+        /// <param name="configuration">
+        ///     Configuration root or section that
+        ///     <typeparamref name="TWorkOptions" /> will bind against.
+        /// </param>
+        /// <param name="configure">Delegate used to configure </param>
+        /// <exception cref="ArgumentException">
+        ///     <typeparamref name="TWorkOptions" /> specified does not match the one work type
+        ///     inherits from.
+        /// </exception>
+        public static IServiceCollection AddWork<TWork, TWorkOptions>(this IServiceCollection services, IConfiguration? configuration = null, Action<TWorkOptions>? configure = null)
             where TWork : class, IWork<TWorkOptions>
             where TWorkOptions : class, IWorkOptions
         {
@@ -44,8 +63,8 @@ namespace dotWork.Extensions
                 throw new ArgumentException($"Work uses {workOptionsType.Name} but is registered with {typeof(TWorkOptions).Name}.");
 
             var optionsBuilder = services.AddOptions<TWorkOptions>(typeof(TWork).Name);
-            if (configurationSection != null)
-                optionsBuilder.Bind(configurationSection);
+            if (configuration != null)
+                optionsBuilder.Bind(configuration);
             if (configure != null)
                 optionsBuilder.Configure(configure);
 
@@ -69,7 +88,7 @@ namespace dotWork.Extensions
             return services;
         }
 
-        internal static IServiceCollection AddWork(this IServiceCollection services, Type workType, IConfigurationSection? configurationSection = null, Action<IWorkOptions>? configure = null)
+        internal static IServiceCollection AddWork(this IServiceCollection services, Type workType, IConfiguration? configurationSection = null, Action<IWorkOptions>? configure = null)
         {
             var generic = typeof(ContainerExtensions)
                 .GetMethods()
