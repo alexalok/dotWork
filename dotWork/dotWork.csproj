@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 		<PackageReleaseNotes>
-			* Fixed WorkHost crash when using DefaultWorkOptions
+			* ContainerExtensions: changed IConfigurationSection to IConfiguration
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
