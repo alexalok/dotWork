@@ -1,6 +1,7 @@
 using dotWork;
 using dotWork.Example;
 using dotWork.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -12,6 +13,8 @@ var host = Host.CreateDefaultBuilder(args)
         {
             opt.DelayBetweenIterationsInSeconds = 3600; // 1 hour
         });
+        services.AddScoped<ScopedService>();
+        services.AddSingleton<SingletonService>();
     })
     .Build();
 
