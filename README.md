@@ -187,6 +187,8 @@ And the registration code should look somewhat like that:
 })
 ```
 
+**Important!** Only works contained in an assembly that called this method are registered.
+
 **TIP:** it is possible to override the specific work's registration by calling `AddWork` on it **after** an `AddWorks` call:
 
 ```c#
@@ -201,5 +203,22 @@ And the registration code should look somewhat like that:
 })
 ```
 
+Also, you could specify assembly, that contains works:
+```c#
+.ConfigureServices((ctx, services) =>
+{
+    var cfg = ctx.Configuration;
+    Assembly worksAssembly = ...;
+    services.AddWorksFromAssembly(cfg.GetSection("Works"), worksAssembly);
+})
+```
 
+Or just provide a class from assembly, that contains works:
+```c#
+.ConfigureServices((ctx, services) =>
+{
+    var cfg = ctx.Configuration;
+    services.AddWorksFromAssemblyContaining<MyAwesomeWork>(cfg.GetSection("Works"));
+})
+```
 
