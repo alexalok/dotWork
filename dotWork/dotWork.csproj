@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<PackageReleaseNotes>
-			* ContainerExtensions: changed IConfigurationSection to IConfiguration
+			* Added a possibility to register works on a per-assembly basis
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
