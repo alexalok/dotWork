@@ -19,7 +19,7 @@ namespace dotWork.Extensions
         /// <param name="services"></param>
         /// <param name="configuration">Configuration root or section containing a dictionary of per-work configuration sections.</param>
         /// <param name="typeSelector">
-        ///     If provided, each type implemeting <see cref="IWork{TWorkOptions}" /> will additionally be
+        ///     If provided, each type implementing <see cref="IWork{TWorkOptions}" /> will additionally be
         ///     tested against the selector and only registered if selector returns <b>true</b>.
         /// </param>
         public static IServiceCollection AddWorks(this IServiceCollection services, IConfiguration configuration, Func<Type, bool>? typeSelector = null)
@@ -27,16 +27,7 @@ namespace dotWork.Extensions
             if (configuration is null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            var workTypes = Assembly.GetCallingAssembly().GetTypes().Where(t => t.ImplementsInterface(typeof(IWork<>)));
-            foreach (var workType in workTypes)
-            {
-                if (typeSelector?.Invoke(workType) == false)
-                    continue;
-                var configSubSection = configuration.GetSection(workType.Name);
-                AddWork(services, workType, configSubSection);
-            }
-
-            return services;
+            return AddWorksFromAssembly(services, Assembly.GetCallingAssembly(), configuration, typeSelector);
         }
 
         /// <summary>
@@ -74,16 +65,70 @@ namespace dotWork.Extensions
             services.TryAddSingleton<TWork>();
 
             ServiceDescriptor? existingWorkBase = services.SingleOrDefault(d =>
-                   d.ImplementationType != null
-                && d.ImplementationType.IsGenericType
-                && d.ImplementationType.GetGenericTypeDefinition() == typeof(WorkHost<,>)
-                && d.ImplementationType.GenericTypeArguments.Contains(typeof(TWork)));
+                   d.ImplementationType is { IsGenericType: true }
+                   && d.ImplementationType.GetGenericTypeDefinition() == typeof(WorkHost<,>)
+                   && d.ImplementationType.GenericTypeArguments.Contains(typeof(TWork)));
             if (existingWorkBase != null)
             {
                 // This work is already registered, remove old registration first.
                 services.Remove(existingWorkBase);
             }
             services.AddHostedService<WorkHost<TWork, TWorkOptions>>();
+
+            return services;
+        }
+
+        /// <summary>
+        ///     Registers all or selected classes from assembly containing TObject implementing <see cref="IWork{TWorkOptions}" /> interface as works with the
+        ///     corresponding options.
+        ///     and configures them from <see cref="IConfigurationSection" />.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration">Configuration root or section containing a dictionary of per-work configuration sections.</param>
+        /// <param name="typeSelector">
+        ///     If provided, each type implementing <see cref="IWork{TWorkOptions}" /> will additionally be
+        ///     tested against the selector and only registered if selector returns <b>true</b>.
+        /// </param>
+        public static IServiceCollection AddWorksFromAssemblyContaining<TObject>(
+            this IServiceCollection services,
+            IConfiguration configuration,
+            Func<Type, bool>? typeSelector = null)
+        {
+            if (configuration is null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            return AddWorksFromAssembly(services, typeof(TObject).Assembly, configuration, typeSelector);
+        }
+
+        /// <summary>
+        ///     Registers all or selected classes from selected assembly containing TObject implementing <see cref="IWork{TWorkOptions}" /> interface as works with the
+        ///     corresponding options.
+        ///     and configures them from <see cref="IConfigurationSection" />.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="assembly">Assembly that contains works.</param>
+        /// <param name="configuration">Configuration root or section containing a dictionary of per-work configuration sections.</param>
+        /// <param name="typeSelector">
+        ///     If provided, each type implementing <see cref="IWork{TWorkOptions}" /> will additionally be
+        ///     tested against the selector and only registered if selector returns <b>true</b>.
+        /// </param>
+        public static IServiceCollection AddWorksFromAssembly(
+            this IServiceCollection services,
+            Assembly assembly,
+            IConfiguration configuration,
+            Func<Type, bool>? typeSelector = null)
+        {
+            if (configuration is null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            var workTypes = assembly.GetTypes().Where(t => t.ImplementsInterface(typeof(IWork<>)));
+            foreach (var workType in workTypes)
+            {
+                if (typeSelector?.Invoke(workType) == false)
+                    continue;
+                var configSubSection = configuration.GetSection(workType.Name);
+                AddWork(services, workType, configSubSection);
+            }
 
             return services;
         }
