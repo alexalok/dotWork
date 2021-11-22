@@ -1,28 +1,26 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using dotWork.Extensions;
 using dotWork.Tests.Stubs;
 using dotWork.Tests.TestExceptions;
 using dotWork.Tests.WorkStubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace dotWork.Tests
 {
     public class Invoking_Tests
     {
-        static readonly TimeSpan OneMillisecond = TimeSpan.FromMilliseconds(1);
-
         [Theory]
         [InlineData(typeof(Work_Sync_No_Parameters))]
         [InlineData(typeof(Work_Sync_With_CancellationToken))]
         [InlineData(typeof(Work_Sync_With_Dependency_And_CancellationToken))]
-
         [InlineData(typeof(Work_Async_No_Parameters))]
         [InlineData(typeof(Work_Async_With_CancellationToken))]
         [InlineData(typeof(Work_Async_With_Dependency_And_CancellationToken))]
+        [InlineData(typeof(Work_With_ValueTask))]
         public async Task Iteration_Properly_Executes(Type workType)
         {
             // Arrange

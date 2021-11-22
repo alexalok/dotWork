@@ -30,5 +30,18 @@ namespace dotWork.Tests
             // Assert
             Assert.False(executingTask.IsFaulted);
         }
+
+        [Fact]
+        public async Task WorkHost_Accepts_Work_With_Async_Iteration_Suffix()
+        {
+            // Arrange, Act, Assert
+            ServiceProvider? provider = new ServiceCollection()
+                .AddOptions<DefaultWorkOptions>(nameof(Work_With_Async_Iteration_Suffix))
+                .Services.BuildServiceProvider();
+            var work = new Work_With_Async_Iteration_Suffix();
+            var workHost =
+                new WorkHost<Work_With_Async_Iteration_Suffix, DefaultWorkOptions>(provider, new NullLoggerFactory(),
+                    work); // calls CreateMetadata() which throws if it can't find the iteration method
+        }
     }
 }

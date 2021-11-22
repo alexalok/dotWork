@@ -15,8 +15,6 @@ namespace dotWork
         where TWork : class, IWork<TWorkOptions>
         where TWorkOptions : class, IWorkOptions
     {
-        const string ExecuteIterationMethodName = "ExecuteIteration";
-
         readonly IServiceProvider _services;
         readonly ILogger _logger;
         readonly TWork _work;
@@ -56,7 +54,7 @@ namespace dotWork
             _logger.LogInformation("Work is stopped.");
         }
 
-        async Task ExecuteIterationSafe(CancellationToken stoppingToken)
+        async ValueTask ExecuteIterationSafe(CancellationToken stoppingToken)
         {
             // By resolving scoped services outside try/catch we ensure that missing dependencies 
             // will blow up the host regardless of _workOptions.StopOnException setting.
@@ -83,24 +81,27 @@ namespace dotWork
             }
         }
 
-        async Task ExecuteIterationInternal(object?[] arguments)
+        async ValueTask ExecuteIterationInternal(object?[] arguments)
         {
-            await (_metadata.IsAsync
-                    ? ExecuteAsynchronousIteration(arguments)
-                    : ExecuteSyncronousIterationAsynchronously(arguments));
+            if (_metadata.IsAsync)
+                await ExecuteAsynchronousIteration(arguments);
+            else
+                await ExecuteSyncronousIterationAsynchronously(arguments);
         }
 
-        Task ExecuteAsynchronousIteration(object?[] arguments)
+        async ValueTask ExecuteAsynchronousIteration(object?[] arguments)
         {
             Debug.Assert(_metadata.IsAsync);
-            var result = (Task)_metadata.Invoke(_work, arguments)!;
-            return result;
+            if (_metadata.IsValueTask)
+                await (ValueTask) _metadata.Invoke(_work, arguments)!;
+            else
+                await (Task) _metadata.Invoke(_work, arguments)!;
         }
 
-        Task ExecuteSyncronousIterationAsynchronously(object?[] arguments)
+        async ValueTask ExecuteSyncronousIterationAsynchronously(object?[] arguments)
         {
             Debug.Assert(!_metadata.IsAsync);
-            return Task.Run(async () =>
+            await Task.Run(async () =>
             {
                 // Force the continuation to run async, making sure sync works 
                 // do not block the whole host startup process.
@@ -121,21 +122,29 @@ namespace dotWork
 
         IterationMethodMetadata CreateMetadata()
         {
-            var methodInfo = _work.GetType().GetMethod(ExecuteIterationMethodName);
+            MethodInfo? methodInfo = null;
+            foreach (string executeIterationMethodName in Constants.ExecuteIterationMethodNames)
+            {
+                methodInfo = _work.GetType().GetMethod(executeIterationMethodName);
+                if (methodInfo != null)
+                    break;
+            }
+
             if (methodInfo == null)
-                throw new InvalidOperationException($"{typeof(TWork).Name} does not contain a public {ExecuteIterationMethodName} method.");
+            {
+                var names = string.Join(", ", Constants.ExecuteIterationMethodNames);
+                throw new InvalidOperationException(
+                    $"{typeof(TWork).Name} must contain a public method with one of the following names: [{names}].");
+            }
 
             var parameters = methodInfo.GetParameters();
 
             var returnType = methodInfo.ReturnType;
             bool isAsync = IsMethodAsync(methodInfo);
-            if (returnType != typeof(void) && returnType != typeof(Task))
-            {
-                throw new InvalidOperationException($"{ExecuteIterationMethodName} method must return either void or Task.");
-            }
+            bool isValueTask = isAsync && returnType == typeof(ValueTask);
 
             InvokeDelegate invokeRef = methodInfo.Invoke;
-            var metadata = new IterationMethodMetadata(invokeRef, parameters, isAsync);
+            var metadata = new IterationMethodMetadata(invokeRef, parameters, isAsync, isValueTask);
             return metadata;
         }
 
@@ -197,7 +206,7 @@ namespace dotWork
             // Obtain the custom attribute for the method. 
             // The value returned contains the StateMachineType property. 
             // Null is returned if the attribute isn't present for the method. 
-            var attrib = (AsyncStateMachineAttribute?)method.GetCustomAttribute(attType);
+            var attrib = (AsyncStateMachineAttribute?)CustomAttributeExtensions.GetCustomAttribute(method, attType);
 
             return attrib != null;
         }
