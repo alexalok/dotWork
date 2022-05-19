@@ -15,6 +15,13 @@ namespace dotWork
         where TWork : class, IWork<TWorkOptions>
         where TWorkOptions : class, IWorkOptions
     {
+        /// <summary>
+        ///     Fired on an unhandled exception inside the iteration.
+        ///     Can fire multiple times if work is set to continue after an unhandled exception
+        ///     (see <see cref="IWorkOptions.StopOnException" />)
+        /// </summary>
+        public event EventHandler<Exception>? OnIterationException;
+
         readonly IServiceProvider _services;
         readonly ILogger _logger;
         readonly TWork _work;
@@ -210,9 +217,5 @@ namespace dotWork
 
             return attrib != null;
         }
-
-        // TODO since we only need that for testing, we should try to access the BackgroundService._executingTask
-        // using reflection instead.
-        internal event EventHandler<Exception>? OnIterationException; 
     }
 }

@@ -189,5 +189,29 @@ namespace dotWork.Tests
             // Assert
             Assert.IsType<IterationFinishedException>(thrownEx);
         }
+
+        [Fact]
+        public async Task Ensure_OnIterationException_Is_Invoked_On_Iteration_Exception()
+        {
+            // Arrange
+            var host = new HostBuilder()
+                .ConfigureServices(s => { s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception)); })
+                .Build();
+
+            var workBase = (WorkHost<Work_Async_With_Execution_Counter_Throws_Exception, DefaultWorkOptions>)
+                host.Services.GetServices<IHostedService>()
+                    .Single(s => s.GetType() == typeof(WorkHost<Work_Async_With_Execution_Counter_Throws_Exception, DefaultWorkOptions>));
+
+            bool isInvoked = false;
+            workBase.OnIterationException += (_, _) => { isInvoked = true; };
+
+            // Act 
+            host.Start();
+            await Task.Yield();
+            await host.StopAsync();
+
+            // Assert
+            Assert.True(isInvoked);
+        }
     }
 }
