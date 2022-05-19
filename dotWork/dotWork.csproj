@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>1.3.0</Version>
+		<Version>1.4.0</Version>
 		<PackageReleaseNotes>
-			* Added support for ExecuteIterationAsync method name and ValueTask return value
+			* Made WorkHost.OnIterationException event public.
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
