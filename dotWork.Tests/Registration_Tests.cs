@@ -1,11 +1,11 @@
-﻿using dotWork.Extensions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using dotWork.Extensions;
 using dotWork.Tests.OptionsStubs;
 using dotWork.Tests.WorkStubs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace dotWork.Tests
@@ -29,7 +29,7 @@ namespace dotWork.Tests
                 .ConfigureServices((ctx, s) =>
                 {
                     var cfg = ctx.Configuration;
-                    s.AddWorks(cfg.GetSection("Works"));
+                    s.AddWorks(cfg.GetSection("Works"), t => t != typeof(IAsyncWork));
                 })
                 .Build();
 

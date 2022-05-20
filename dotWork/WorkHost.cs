@@ -22,6 +22,12 @@ namespace dotWork
         /// </summary>
         public event EventHandler<Exception>? OnIterationException;
 
+        /// <summary>
+        ///     Fired when work is stopped. Optionally contains an exception
+        ///     if work has stopped due to an unhandled exception.
+        /// </summary>
+        public event EventHandler<Exception?>? OnWorkStopped;
+
         readonly IServiceProvider _services;
         readonly ILogger _logger;
         readonly TWork _work;
@@ -49,16 +55,34 @@ namespace dotWork
 
             _logger.LogInformation("Starting work.");
 
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                await ExecuteIterationSafe(stoppingToken);
-                var delay = WorkOptions.DelayBetweenIterationsInSeconds == Timeout.Infinite
-                    ? Timeout.InfiniteTimeSpan
-                    : TimeSpan.FromSeconds(WorkOptions.DelayBetweenIterationsInSeconds);
-                await Task.Delay(delay, stoppingToken);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    await ExecuteIterationSafe(stoppingToken);
+                    var delay = WorkOptions.DelayBetweenIterationsInSeconds == Timeout.Infinite
+                        ? Timeout.InfiniteTimeSpan
+                        : TimeSpan.FromSeconds(WorkOptions.DelayBetweenIterationsInSeconds);
+                    await Task.Delay(delay, stoppingToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is OperationCanceledException oce && oce.CancellationToken == stoppingToken)
+                {
+                    OnWorkStopped?.Invoke(this, null);
+                }
+                else
+                {
+                    _logger.LogWarning(ex, "Work is stopped due to an unhandled exception.");
+                    OnWorkStopped?.Invoke(this, ex);
+                }
+
+                throw;
             }
 
-            _logger.LogInformation("Work is stopped.");
+            OnWorkStopped?.Invoke(this, null);
+            _logger.LogInformation("Work is gracefully stopped.");
         }
 
         async ValueTask ExecuteIterationSafe(CancellationToken stoppingToken)
@@ -75,8 +99,9 @@ namespace dotWork
             catch (Exception ex)
             {
                 OnIterationException?.Invoke(this, ex);
+                bool forceStopOnException = await _work.OnIterationException(ex);
                 _logger.LogError(ex, "Exception during iteration.");
-                if (WorkOptions.StopOnException)
+                if (forceStopOnException || WorkOptions.StopOnException)
                 {
                     _logger.LogError("No more iterations of this work will be executed due to an unhandled exception.");
                     throw;

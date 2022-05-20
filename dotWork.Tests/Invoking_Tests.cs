@@ -54,7 +54,8 @@ namespace dotWork.Tests
                     });
                 })
                 .Build();
-            var work = (Work_Async_With_Execution_Counter_Throws_Exception)host.Services.GetRequiredService(typeof(Work_Async_With_Execution_Counter_Throws_Exception));
+            var work = (Work_Async_With_Execution_Counter_Throws_Exception) host.Services.GetRequiredService(
+                typeof(Work_Async_With_Execution_Counter_Throws_Exception));
 
             // Act 
             host.Start();
@@ -79,8 +80,8 @@ namespace dotWork.Tests
                     s.AddWork(typeof(Work_Sync_With_Counter2));
                 })
                 .Build();
-            var work1 = (Work_Sync_With_Counter1)host.Services.GetRequiredService(typeof(Work_Sync_With_Counter1));
-            var work2 = (Work_Sync_With_Counter2)host.Services.GetRequiredService(typeof(Work_Sync_With_Counter2));
+            var work1 = (Work_Sync_With_Counter1) host.Services.GetRequiredService(typeof(Work_Sync_With_Counter1));
+            var work2 = (Work_Sync_With_Counter2) host.Services.GetRequiredService(typeof(Work_Sync_With_Counter2));
 
             // Act 
             host.Start();
@@ -100,13 +101,10 @@ namespace dotWork.Tests
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<StubDependency>();
-                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), configure: opt =>
-                    {
-                        opt.DelayBetweenIterationsInSeconds = 0;
-                    });
+                    s.AddWork(typeof(Work_Ensure_Iteration_Lifetime), configure: opt => { opt.DelayBetweenIterationsInSeconds = 0; });
                 })
                 .Build();
-            var work = (Work_Ensure_Iteration_Lifetime)host.Services.GetRequiredService(typeof(Work_Ensure_Iteration_Lifetime));
+            var work = (Work_Ensure_Iteration_Lifetime) host.Services.GetRequiredService(typeof(Work_Ensure_Iteration_Lifetime));
 
             // Act 
             host.Start();
@@ -123,10 +121,7 @@ namespace dotWork.Tests
         {
             // Arrange
             var host = new HostBuilder()
-                .ConfigureServices(s =>
-                {
-                    s.AddWork(typeof(Work_Sync_With_Dependency_And_CancellationToken));
-                })
+                .ConfigureServices(s => { s.AddWork(typeof(Work_Sync_With_Dependency_And_CancellationToken)); })
                 .Build();
 
             // Act & Assert
@@ -141,14 +136,12 @@ namespace dotWork.Tests
             // Arrange
             var host = new HostBuilder()
                 .ConfigureServices(s =>
-                {
-                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), configure: opt =>
                     {
-                        opt.IsEnabled = isEnabled;
-                    });
-                })
+                        s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), configure: opt => { opt.IsEnabled = isEnabled; });
+                    })
                 .Build();
-            var work = (Work_Async_With_Execution_Counter_Throws_Exception)host.Services.GetRequiredService(typeof(Work_Async_With_Execution_Counter_Throws_Exception));
+            var work = (Work_Async_With_Execution_Counter_Throws_Exception) host.Services.GetRequiredService(
+                typeof(Work_Async_With_Execution_Counter_Throws_Exception));
 
             // Act 
             host.Start();
@@ -165,21 +158,15 @@ namespace dotWork.Tests
         {
             // Arrange
             var host = new HostBuilder()
-                .ConfigureServices(s =>
-                {
-                    s.AddWork(typeof(Work_Sync_Throws));
-                })
+                .ConfigureServices(s => { s.AddWork(typeof(Work_Sync_Throws)); })
                 .Build();
 
             var workBase = (WorkHost<Work_Sync_Throws, DefaultWorkOptions>)
                 host.Services.GetServices<IHostedService>()
-                .Single(s => s.GetType() == typeof(WorkHost<Work_Sync_Throws, DefaultWorkOptions>));
+                    .Single(s => s.GetType() == typeof(WorkHost<Work_Sync_Throws, DefaultWorkOptions>));
 
             Exception? thrownEx = null;
-            workBase.OnIterationException += (_, ex) =>
-            {
-                thrownEx = ex;
-            };
+            workBase.OnIterationException += (_, ex) => { thrownEx = ex; };
 
             // Act 
             host.Start();
@@ -212,6 +199,36 @@ namespace dotWork.Tests
 
             // Assert
             Assert.True(isInvoked);
+        }
+
+        [Fact]
+        public async Task Ensure_OnWorkStopped_Is_Invoked_With_Unhandled_Exception_If_StopOnException_Is_True()
+        {
+            // Arrange
+            var host = new HostBuilder()
+                .ConfigureServices(s =>
+                {
+                    s.AddWork(typeof(Work_Async_With_Execution_Counter_Throws_Exception), configure: opt => opt.StopOnException = true);
+                })
+                .Build();
+
+            var workBase = (WorkHost<Work_Async_With_Execution_Counter_Throws_Exception, DefaultWorkOptions>)
+                host.Services.GetServices<IHostedService>()
+                    .Single(s => s.GetType() == typeof(WorkHost<Work_Async_With_Execution_Counter_Throws_Exception, DefaultWorkOptions>));
+
+            TaskCompletionSource iterExTcs = new();
+            TaskCompletionSource<Exception> stoppedTcs = new();
+            workBase.OnIterationException += (_, _) => iterExTcs.SetResult();
+            workBase.OnWorkStopped += (_, ex) => { stoppedTcs.SetResult(ex!); };
+
+            // Act 
+            host.Start();
+            await iterExTcs.Task;
+            await host.StopAsync();
+            var ex = await stoppedTcs.Task;
+
+            // Assert
+            Assert.IsType<IterationFinishedException>(ex);
         }
     }
 }
