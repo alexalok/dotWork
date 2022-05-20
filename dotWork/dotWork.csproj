@@ -8,9 +8,9 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>1.4.0</Version>
+		<Version>1.5.0</Version>
 		<PackageReleaseNotes>
-			* Made WorkHost.OnIterationException event public.
+			* Introduced WorkHost.OnWorkStopped and IWork.OnIterationException events.
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
