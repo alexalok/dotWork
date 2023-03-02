@@ -121,7 +121,10 @@ namespace dotWork.Extensions
             if (configuration is null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            var workTypes = assembly.GetTypes().Where(t => t.ImplementsInterface(typeof(IWork<>)));
+            var workTypes = assembly.GetTypes().Where(t => 
+                t.ImplementsInterface(typeof(IWork<>))
+                && !t.IsAbstract
+                );
             foreach (var workType in workTypes)
             {
                 if (typeSelector?.Invoke(workType) == false)

@@ -7,10 +7,10 @@
 	<PropertyGroup>
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
-		<Copyright>Copyright © alexalok 2021</Copyright>
-		<Version>1.5.0</Version>
+		<Copyright>Copyright © alexalok 2021-2023</Copyright>
+		<Version>1.5.1</Version>
 		<PackageReleaseNotes>
-			* Introduced WorkHost.OnWorkStopped and IWork.OnIterationException events.
+			* fix: skip abstract classes when registering via AddWorksFromAssembly
 		</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
