@@ -40,6 +40,7 @@ namespace dotWork
         readonly IterationMethodMetadata _metadata;
 
         internal TWorkOptions WorkOptions;
+        TaskCompletionSource _forceSkipCurrentDelayTcs = new();
 
         public WorkHost(IServiceProvider services, ILoggerFactory loggerFac, TWork work)
         {
@@ -49,6 +50,7 @@ namespace dotWork
             _metadata = CreateMetadata();
             WorkOptions = GetWorkOptions();
             _work.Options = WorkOptions;
+            _work.SkipDelayRequested += _work_SkipDelayRequested;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -69,7 +71,9 @@ namespace dotWork
                     var delay = WorkOptions.DelayBetweenIterationsInSeconds == Timeout.Infinite
                         ? Timeout.InfiniteTimeSpan
                         : TimeSpan.FromSeconds(WorkOptions.DelayBetweenIterationsInSeconds);
-                    await Task.Delay(delay, stoppingToken);
+                    var delayTask = Task.Delay(delay, stoppingToken);
+                    await Task.WhenAny(delayTask, _forceSkipCurrentDelayTcs.Task);
+                    _forceSkipCurrentDelayTcs = new();
                 }
             }
             catch (Exception ex)
@@ -193,7 +197,7 @@ namespace dotWork
             // TODO do not create scope if we have no deps except CancellationToken.
 
             scope = _services.CreateScope();
-            var provider = ((IServiceScope)scope).ServiceProvider;
+            var provider = ((IServiceScope) scope).ServiceProvider;
 
             var parameters = _metadata.Parameters;
             var arguments = new object?[parameters.Length];
@@ -239,6 +243,8 @@ namespace dotWork
             _logger.LogInformation("Work options reloaded.");
         }
 
+        private void _work_SkipDelayRequested(object? sender, EventArgs e) => _forceSkipCurrentDelayTcs.TrySetResult();
+
         static bool IsMethodAsync(MethodInfo method)
         {
             Type attType = typeof(AsyncStateMachineAttribute);
@@ -246,7 +252,7 @@ namespace dotWork
             // Obtain the custom attribute for the method. 
             // The value returned contains the StateMachineType property. 
             // Null is returned if the attribute isn't present for the method. 
-            var attrib = (AsyncStateMachineAttribute?)CustomAttributeExtensions.GetCustomAttribute(method, attType);
+            var attrib = (AsyncStateMachineAttribute?) CustomAttributeExtensions.GetCustomAttribute(method, attType);
 
             return attrib != null;
         }

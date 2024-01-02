@@ -4,10 +4,8 @@
 		<Authors>alexalok</Authors>
 		<Description>.NET Workers made easy</Description>
 		<Copyright>Copyright © alexalok 2021-2023</Copyright>
-		<Version>1.5.1</Version>
-		<PackageReleaseNotes>
-			* fix: skip abstract classes when registering via AddWorksFromAssembly
-		</PackageReleaseNotes>
+		<Version>1.6.0</Version>
+		<PackageReleaseNotes>Added SkipDelayOnce method which allows skipping delay before the next iteration starts.</PackageReleaseNotes>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/alexalok/dotWork</RepositoryUrl>
 		<PackageTags>worker, service, ihostedservice, backgroundservice</PackageTags>

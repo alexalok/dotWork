@@ -18,5 +18,7 @@ namespace dotWork
         ///     `false` if <see cref="IWorkOptions.StopOnException" /> decides (default).
         /// </returns>
         ValueTask<bool> OnIterationException(Exception ex) => ValueTask.FromResult(false);
+
+        public event EventHandler? SkipDelayRequested;
     }
 }
