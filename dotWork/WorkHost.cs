@@ -28,6 +28,12 @@ namespace dotWork
         /// </summary>
         public event EventHandler<Exception?>? OnWorkStopped;
 
+        /// <summary>
+        /// Fired when iteration has finished, regardless of whether it was successful or not.
+        /// If iteration failed due to an unhandled exception, <seealso cref="Exception"/> will be set.
+        /// </summary>
+        public event EventHandler<Exception?>? OnIterationFinished;
+
         readonly IServiceProvider _services;
         readonly ILogger _logger;
         readonly TWork _work;
@@ -94,11 +100,13 @@ namespace dotWork
             {
                 _logger.LogTrace("Executing iteration...");
                 await ExecuteIterationInternal(arguments);
+                OnIterationFinished?.Invoke(this, null);
                 _logger.LogTrace("Iteration executed.");
             }
             catch (Exception ex)
             {
                 OnIterationException?.Invoke(this, ex);
+                OnIterationFinished?.Invoke(this, ex);
                 bool forceStopOnException = await _work.OnIterationException(ex);
                 _logger.LogError(ex, "Exception during iteration.");
                 if (forceStopOnException || WorkOptions.StopOnException)
