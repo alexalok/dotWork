@@ -8,8 +8,7 @@ namespace dotWork.Tests
     {
         public static Task GetExecutingTask(this BackgroundService workHost)
         {
-            var fieldInfo = typeof(BackgroundService).GetField("_executingTask", BindingFlags.Instance | BindingFlags.NonPublic);
-            return (Task) fieldInfo!.GetValue(workHost)!;
+            return workHost.ExecuteTask!;
         }
     }
 }
