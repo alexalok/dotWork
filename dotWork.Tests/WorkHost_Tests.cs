@@ -1,13 +1,13 @@
-﻿using dotWork.Tests.OptionsStubs;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using dotWork.Tests.OptionsStubs;
 using dotWork.Tests.TestExceptions;
 using dotWork.Tests.WorkStubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace dotWork.Tests
@@ -127,7 +127,7 @@ namespace dotWork.Tests
             int iterationsCount = 0;
             TaskCompletionSource tcs = new();
             CancellationTokenSource cts = new(TimeSpan.FromSeconds(1));
-            cts.Token.Register(tcs.SetCanceled);
+            cts.Token.Register(() => tcs.TrySetCanceled());
             workHost.OnIterationFinished += async (_, e) =>
             {
                 iterationsCount++;
@@ -171,7 +171,8 @@ namespace dotWork.Tests
             TaskCompletionSource firstIterationFinishedTcs = new();
             TaskCompletionSource secondIterationFinishedTcs = new();
             CancellationTokenSource cts = new(TimeSpan.FromSeconds(1));
-            cts.Token.Register(secondIterationFinishedTcs.SetCanceled);
+            cts.Token.Register(() => firstIterationFinishedTcs.TrySetCanceled());
+            cts.Token.Register(() => secondIterationFinishedTcs.TrySetCanceled());
             workHost.OnIterationFinished += async (_, e) =>
             {
                 iterationsCount++;
