@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <UserSecretsId>dotnet-dotWork.Example-CC09066C-5A81-4AB7-AA7D-795C121289F7</UserSecretsId>
   </PropertyGroup>
 
